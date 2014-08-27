@@ -221,18 +221,6 @@ def run(command_path = None):
         rtems_tools = opts.find_arg('--rtems-tools')
         if rtems_tools:
             rtems_tools = rtems_tools[1]
-#
-        coverage_enabled = opts.opts['coverage']
-        if coverage_enabled:
-            import coverage
-            from rtemstoolkit import check
-            log.notice("Coverage analysis requested")
-            opts.defaults.load('%%{_configdir}/coverage.mc')
-            if not check.check_exe('__covoar', opts.defaults['__covoar']):
-                raise error.general("Covoar not found!")
-            coverage = coverage.coverage_run(opts.defaults['_cwd'], opts.defaults['_rtdir'])
-            coverage.prepareEnvironment();
-
         bsp = opts.find_arg('--rtems-bsp')
         if bsp is None:
             raise error.general('no RTEMS BSP provided')
@@ -247,6 +235,18 @@ def run(command_path = None):
         if not bsp_script:
             raise error.general('BSP script not found: %s' % (bsp))
         bsp_config = opts.defaults.expand(opts.defaults[bsp])
+
+        coverage_enabled = opts.coverage()
+        if coverage_enabled:
+            import coverage
+            from rtemstoolkit import check
+            log.notice("Coverage analysis requested")
+            opts.defaults.load('%%{_configdir}/coverage.mc')
+            if not check.check_exe('__covoar', opts.defaults['__covoar']):
+                raise error.general("Covoar not found!")
+            coverage = coverage.coverage_run(opts.defaults)
+            coverage.prepareEnvironment();
+
         report_mode = opts.find_arg('--report-mode')
         if report_mode:
             if report_mode[1] != 'failures' and \
@@ -313,6 +313,7 @@ def run(command_path = None):
         log.notice('Testing time     : %s' % (str(end_time - start_time)))
 
         if coverage_enabled:
+            coverage.config_map = opts.defaults.macros['coverage']
             coverage.executables = executables
             coverage.run()
 
