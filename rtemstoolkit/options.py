@@ -406,6 +406,9 @@ class command_line(object):
     def no_install(self):
         return self.opts['no-install'] != '0'
 
+    def coverage(self):
+        return self.opts['coverage'] != '0'
+
     def user_macros(self):
         #
         # Return something even if it does not exist.
