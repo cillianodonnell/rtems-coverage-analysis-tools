@@ -7,6 +7,7 @@ from rtemstoolkit import path
 from rtemstoolkit import log
 from rtemstoolkit import execute
 from rtemstoolkit import macros
+import shutil
 import os
 from datetime import datetime
 
@@ -148,36 +149,114 @@ class reportGen:
         self._createIndexFile(headSection,indexContent)
 #         _createSummaryFile(summaryContent)
 
+class symbolsConfiguration(object):
+    '''
+    Manages symbols configuration - reading from symbol file
+    '''
+    def __init__(self):
+        self.symbolSets = []
+
+    def _log_invalid_format(self):
+        log.stderr("Invalid symbol configuration file")
+        log.stderr(''' Configuration file format:
+                symbolset:
+                   name=SYMBOLSET_NAME
+                   lib=PATH_TO_LIBRARY_1
+                   lib=PATH_TO_LIBRARY_2
+                symbolset:
+                    name=SYMBOLSET_NAME_N
+                    lib=PATH_TO_LIBRARY        ''')
+
+    def load(self, symbolSetConfigFile):
+        scf = open(symbolSetConfigFile, 'r')
+        for line in scf:
+            try:
+                if line.strip().startswith("symbolset"):
+                    self.symbolSets.append(symbolSet("",[]))
+                else:
+                    splitted = line.split('=')
+                    if(len(splitted) == 2):
+                        key = splitted[0].strip()
+                        value = splitted[1].strip()
+                        if key == 'name':
+                            self.symbolSets[-1].name = value
+                        elif key == 'lib':
+                            self.symbolSets[-1].libs.append(value)
+                        else:
+                            log.stderr("Invalid key : " + key + " in symbol set configuration file " + symbolSetConfigFile)
+                    else:
+                        self._log_invalid_format()
+            except:
+                self._log_invalid_format()
+        scf.close()
+
+    def save(self, path):
+        scf = open(path, 'w')
+        for sset in self.symbolSets:
+            sset.writeSetFile(path)
+        scf.close()
+
+class symbolSet(object):
+    def __init__(self, name, libs):
+        self.name = name
+        self.libs = libs
+
+    def isValid(self):
+        if len(self.name) == 0:
+            log.stderr("Invalid symbol set. Symbol set must have name! ")
+            return False
+        if len(self.libs) == 0:
+            log.stderr("Invalid symbol set. Symbol set must have specified libraries!")
+            return False
+        for lib in self.libs:
+            if not path.exists(lib):
+                log.stderr("Invalid library path: " + lib)
+                return False
+        return True
+
+    def writeSetFile(self, path):
+        f = open(path, 'w')
+        f.write("symbolset:\n")
+        f.write("\t name=" + self.name + '\n')
+        for lib in self.libs:
+            f.write("\t lib=" + lib + '\n')
+        f.close()
+
 class covoar(object):
     '''
     Covoar runner
     '''
 
-    def __init__(self, baseResultDir, configDir, tracesDir):
+    def __init__(self, baseResultDir, configDir, tracesDir, covoarSrcDir):
         self.baseResultDir = baseResultDir
         self.configDir = configDir
         self.tracesDir = tracesDir
+        self.covoarSrcDir = covoarSrcDir
 
     def run(self, setName, covoarConfigFile, symbolFile):
         covoarResultDir = path.join(self.baseResultDir, setName)
 
         if (not path.exists(covoarResultDir)):
             path.mkdir(covoarResultDir)
-        symbolFile = path.join(self.configDir, symbolFile)
 
         if (not path.exists(symbolFile)):
-            log.stderr("Symbol file: " + symbolFile + " doesn't exists! Covoar can not be run!")
+            log.stderr("Symbol set file: " + symbolFile + " doesn't exists! Covoar can not be run!")
             log.stderr("Skipping " + setName)
             return
 
-        command = "covoar -C" + covoarConfigFile + " -s " + symbolFile + " -O " + covoarResultDir + " " + path.join(self.tracesDir, "*.exe")
+        command = "covoar -C" + covoarConfigFile + " -S " + symbolFile + " -O " + covoarResultDir + " " + path.join(self.tracesDir, "*.exe")
         log.notice("Running covoar for " + setName, stdout_only=True)
         log.notice(command, stdout_only=True)
         executor = execute.execute(verbose=True, output=output_handler)
         exit_code = executor.shell(command, cwd=os.getcwd())
+         
+        shutil.copy2(path.join(self.covoarSrcDir, 'table.js'), path.join(covoarResultDir, 'table.js'))
+        shutil.copy2(path.join(self.covoarSrcDir, 'covoar.css'), path.join(covoarResultDir, 'covoar.css'))
+         
+        log.notice("Coverage run for " + setName + " finished ")
         status = "success"
-        if (exit_code != 0):
-            status = "failure"
+        if (exit_code[0] != 0):
+            status = "failure. Error code: " + str(exit_code[0])
         log.notice("Coverage run for " + setName + " finished " + status)
         log.notice("-----------------------------------------------")
 
@@ -186,18 +265,19 @@ class coverage_run(object):
     Coverage analysis support for rtems-test
     '''
 
-    def __init__(self, p_targetDir, p_rtdir):
+    def __init__(self, p_macros):
         '''
         Constructor
         '''
-        self.targetDir = p_targetDir
+        self.macros = p_macros
+        self.targetDir = self.macros['_cwd']
         self.testDir = path.join(self.targetDir, "test")
-        self.covoarConfigPath = path.join(p_rtdir, "config")
-        self.rtdir = path.abspath(p_rtdir)
-        self.macros = macros.macros(name=path.join(self.rtdir,'rtems','testing','testing.mc'), rtdir=path.abspath(p_rtdir))
+        self.rtdir = path.abspath(self.macros['_rtdir'])
         self.rtscripts = self.macros.expand(self.macros['_rtscripts'])
-        self.symbolConfigPath = path.join(self.rtscripts, "coverage")
+        self.coverageConfigPath = path.join(self.rtscripts, "coverage")
+        self.symbolConfigPath = path.join(self.coverageConfigPath, "symbolSets.config")
         self.tracesDir = path.join(self.targetDir, 'coverage')
+        self.config_map = self.macros.macros['coverage']
         self.executables = None
         self.symbolSets = []
 
@@ -207,27 +287,46 @@ class coverage_run(object):
         path.mkdir(self.tracesDir)
         log.notice("Coverage environment prepared", stdout_only = True)
 
+    def writeCovoarConfig(self, covoarConfigFile):
+        ccf = open(covoarConfigFile, 'w')
+        ccf.write("format = " + self.config_map['format'][2] + '\n')
+        ccf.write("target = " + self.config_map['target'][2] + '\n')
+        ccf.write("explanations = " + self.macros.expand(self.config_map['explanations'][2]) + '\n')
+        ccf.write("coverageExtension = " + self.config_map['coverageextension'][2] + '\n')
+        ccf.write("gcnosFile = " + self.macros.expand(self.config_map['gcnosfile'][2]) + '\n')
+        ccf.write("executableExtension = " + self.config_map['executableextension'][2] + '\n')
+        ccf.write("projectName = " + self.config_map['projectname'][2] + '\n')
+        ccf.close()
 
     def run(self):
         if self.executables == None:
             log.stderr("ERROR: Executables for coverage analysis unspecified!")
             raise Exception('Executable for coverage analysis unspecified')
+        if self.config_map == None:
+            log.stderr("ERROR: Configuration map for coverage analysis unspecified!")
+            raise Exception("ERROR: Configuration map for coverage analysis unspecified!")
 
-        covoarConfigFile = path.join(self.symbolConfigPath, 'config')
+        covoarConfigFile = path.join(self.tracesDir, 'config')
+        self.writeCovoarConfig(covoarConfigFile)
         if(not path.exists(covoarConfigFile)):
             log.stderr("Covoar configuration file: " + path.abspath(covoarConfigFile) + " doesn't exists! Covoar can not be run! ");
             return -1
 
         self._linkExecutables()
 
-        symbolSetsFile = open(path.join(self.symbolConfigPath,"symbol_sets"), 'r');
-        for symbolSet in symbolSetsFile:
-            setName = symbolSet.split()[0]
-            symbolFile = symbolSet.split()[1]
-            self.symbolSets.append(setName)
+        symbolConfig = symbolsConfiguration()
+        symbolConfig.load(self.symbolConfigPath)
 
-            covoar_run = covoar(self.testDir, self.symbolConfigPath, self.tracesDir)
-            covoar_run.run(setName, covoarConfigFile, symbolFile)
+        for sset in symbolConfig.symbolSets:
+            if sset.isValid():
+                symbolSetFile = path.join(self.tracesDir, sset.name + ".symcfg")
+                sset.writeSetFile(symbolSetFile)
+                self.symbolSets.append(sset.name)
+
+                covoar_run = covoar(self.testDir, self.symbolConfigPath, self.tracesDir, path.join(self.rtdir, 'covoar'))
+                covoar_run.run(sset.name, covoarConfigFile, symbolSetFile)
+            else:
+                log.stderr("Invalid symbol set " + sset.name + ". Skipping covoar run.")
 
         self._generateReports();
         self._cleanup();
@@ -238,7 +337,6 @@ class coverage_run(object):
 
         for exe in self.executables:
             dst = path.join(self.tracesDir, path.basename(exe))
-            log.notice("Making symlink from " + exe + " to " + dst)
             os.link(exe, dst)
         log.notice("Symlinks made")
 
@@ -255,10 +353,10 @@ class coverage_run(object):
         log.notice("Coverage analysis finished. You can find results in " + self.targetDir)
 
 def output_handler(text):
-    log.notice(text, stdout_only = True)
+    log.notice(text, stdout_only = False)
 
 if __name__ == "__main__":
-    c = coverage_run("/home/rtems/coverage/test_new","/home/rtems/development/rtems/src/rtems-tools/tester")
+    c = coverage_run("/home/krzysztof/coverage/kmtest","/home/krzysztof/development/rtems/src/rtems-tools/tester")
     c.prepareEnvironment()
-    c.executables = ["/home/rtems/development/rtems/src/b-pc386/i386-rtems4.11/c/pc386/testsuites/samples/hello/hello.exe"]
+    c.executables = ["/home/krzysztof/development/rtems/src/b-pc386/i386-rtems4.11/c/pc386/testsuites/samples/hello/hello.exe"]
     c.run()

@@ -45,7 +45,7 @@
 # The i386/pc386 QEMU BSP
 #
 
-hda:	none,	dir,	'/home/rtems/qemu/hdtest/rtems-boot.img'
+hda:	none,	dir,	'%{_rtscripts}/coverage/rtems-boot.img'
 
 [global]
 bsp:                      none,    none,     'pc386'
@@ -55,3 +55,12 @@ coverage_supported:	  none,	   none,	'1'
 pc386:      none,    none,  '%{_rtscripts}/qemu.cfg'
 pc386_arch: none,    none,  'i386'
 pc386_opts: none,    none,  '-m 128 -boot b -hda %{hda} %{qemu_opts_base} -append "--console=com1;boot;"'
+
+[coverage]
+format:		none, none, 'QEMU'
+target:		none, none, 'i386-rtems4.11'
+explanations:	none, none, '%{_rtscripts}/coverage/Explanations.txt'
+coverageExtension:	none, none, 'exe.cov'
+gcnosFile:	none, none, '%{_rtscripts}/coverage/rtems.gcnos'
+executableExtension:	none, none, 'exe'
+projectName:	none, none, 'RTEMS 4.11'
