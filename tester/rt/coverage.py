@@ -25,10 +25,12 @@ class summary:
         self.branches_alwaysTaken = 0
         self.branches_neverTaken = 0
         self.percentage_branchesCovered = 0.0
+        self.isFailure = False
 
     def parse(self):
         if(not path.exists(self.summaryFilePath)):
             log.warning("Summary file " + self.summaryFilePath + " does not exist!")
+            self.isFailure = True
             return
 
         summaryFile = open(self.summaryFilePath,'r')
@@ -59,6 +61,7 @@ class reportGen:
         self.symbolSetsList = p_symbolSetsList
         self.targetDir = p_targetDir
         self.partialReportsFiles = list(["index.html", "summary.txt"])
+        self.numberOfColumns = 1
 
     def _findPartialReports(self):
         partialReports = {}
@@ -98,19 +101,22 @@ class reportGen:
     def _row(self, symbolSet, summary):
         row = "<tr>"
         row += "<td>" + symbolSet + "</td>"
-        row += " <td>" + self._link(summary.indexFilePath,"Index") + "</td>"
-        row += " <td>" + self._link(summary.summaryFilePath,"Summary") + "</td>"
-        row += " <td>" + summary.bytes_analyzed + "</td>"
-        row += " <td>" + summary.bytes_notExecuted + "</td>"
-        row += " <td>" + summary.ranges_uncovered + "</td>"
-        row += " <td>" + summary.percentage_executed + "%</td>"
-        row += " <td>" + summary.percentage_notExecuted + "%</td>"
-        row += ' <td><progress value="' + summary.percentage_executed + '" max="100"></progress></td>'
-        row += " <td>" + summary.branches_uncovered + "</td>"
-        row += " <td>" + summary.branches_total + "</td>"
-        row += " <td> {:.3%} </td>".format(summary.percentage_branchesCovered)
-        row += ' <td><progress value="{:.3}" max="100"></progress></td>'.format(100*summary.percentage_branchesCovered)
-        row += "</tr>\n"
+        if summary.isFailure:
+            row += ' <td colspan="' + str(self.numberOfColumns-1) + '" style="background-color:red">FAILURE</td>'
+        else:
+            row += " <td>" + self._link(summary.indexFilePath,"Index") + "</td>"
+            row += " <td>" + self._link(summary.summaryFilePath,"Summary") + "</td>"
+            row += " <td>" + summary.bytes_analyzed + "</td>"
+            row += " <td>" + summary.bytes_notExecuted + "</td>"
+            row += " <td>" + summary.ranges_uncovered + "</td>"
+            row += " <td>" + summary.percentage_executed + "%</td>"
+            row += " <td>" + summary.percentage_notExecuted + "%</td>"
+            row += ' <td><progress value="' + summary.percentage_executed + '" max="100"></progress></td>'
+            row += " <td>" + summary.branches_uncovered + "</td>"
+            row += " <td>" + summary.branches_total + "</td>"
+            row += " <td> {:.3%} </td>".format(summary.percentage_branchesCovered)
+            row += ' <td><progress value="{:.3}" max="100"></progress></td>'.format(100*summary.percentage_branchesCovered)
+            row += "</tr>\n"
         return row
 
     def _headerRow(self):
@@ -129,6 +135,7 @@ class reportGen:
         row += "<th> Branches covered percentage </th>"
         row += "<th> Branches coverage </th>"
         row += "</tr>\n"
+        self.numberOfColumns = row.count('<th>')
         return row
 
     def _link(self, address, text):
