@@ -24,16 +24,9 @@ SymbolSet::~SymbolSet() {
 }
 
 std::string SymbolSet::parseNmOutputLine(std::string line) {
-	std::cout << "Read: " << std::endl;
-	std::cout << line << std::endl;
-	std::cout << "--------" << std::endl;
 	std::string symbol = "";
 	if (line.find("FUNC|") != std::string::npos) {
-		std::cout << "Function:" << std::endl;
 		symbol = line.substr(0, line.find('|'));
-		std::cout << symbol << std::endl;
-	} else {
-		std::cout << "Not a function" << std::endl;
 	}
 	return symbol;
 }
@@ -64,7 +57,6 @@ void SymbolSet::parseNmOutput(std::ifstream& nm_out, const std::string& lib) {
 }
 
 void SymbolSet::generateSymbolFile(std::string filePath, std::string target) {
-	std::cout << __FUNCTION__ << "(): arguments: " << filePath << ", " << target << std::endl;
 	std::string nm_output = "nm.out";
 	std::string nm_error = "nm.err";
 	std::string libFiles;

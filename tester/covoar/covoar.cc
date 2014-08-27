@@ -367,12 +367,12 @@ int main(
 
   //Read symbol configuration file and load needed symbols
   if(symbolSetFile) {
-	  cout << "Reading symbols sets configuration for symbol set file: " << symbolSetFile << endl;
+	  fprintf(stderr,"Reading symbols sets configuration for symbol set file: %s\n", symbolSetFile);
 	  Symbols::SymbolSetReader ssr;
 	  std::vector<Symbols::SymbolSet> symbolSets = ssr.readSetFile(symbolSetFile);
 
 	  Symbols::SymbolSet& set = symbolSets[0];
-	  cout << "Generating symbol file for " << set.getName() << endl;
+	  fprintf(stderr,"Generating symbol file for %s\n", set.getName().c_str());
 	  set.generateSymbolFile(set.getName() + ".syms", target);
 	  SymbolsToAnalyze->load((set.getName() + ".syms").c_str());
   }
