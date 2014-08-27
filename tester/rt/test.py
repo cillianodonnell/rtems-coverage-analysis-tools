@@ -64,6 +64,7 @@ class test(object):
         if not path.isfile(executable):
             raise error.general('cannot find executable: %s' % (executable))
         self.opts.defaults['test_executable'] = executable
+        self.opts.defaults['test_executable_name'] = path.basename(executable)
         if rtems_tools:
             rtems_tools_bin = path.join(rtems_tools, 'bin')
             if not path.isdir(rtems_tools_bin):
@@ -197,7 +198,7 @@ def run(command_path = None):
                     '--debug-trace': 'Debug trace based on specific flags',
                     '--filter':      'Glob that executables must match to run (default: ' +
                               default_exefilter + ')',
-                    '--stacktrace':  'Dump a stack trace on a user termination (^C)' }
+                    '--stacktrace':  'Dump a stack trace on a user termination (^C)'}
         opts = options.load(sys.argv,
                             optargs = optargs,
                             command_path = command_path)
@@ -220,6 +221,18 @@ def run(command_path = None):
         rtems_tools = opts.find_arg('--rtems-tools')
         if rtems_tools:
             rtems_tools = rtems_tools[1]
+#
+        coverage_enabled = opts.opts['coverage']
+        if coverage_enabled:
+            import coverage
+            from rtemstoolkit import check
+            log.notice("Coverage analysis requested")
+            opts.defaults.load('%%{_configdir}/coverage.mc')
+            if not check.check_exe('__covoar', opts.defaults['__covoar']):
+                raise error.general("Covoar not found!")
+            coverage = coverage.coverage_run(opts.defaults['_cwd'], opts.defaults['_rtdir'])
+            coverage.prepareEnvironment();
+
         bsp = opts.find_arg('--rtems-bsp')
         if bsp is None:
             raise error.general('no RTEMS BSP provided')
@@ -298,6 +311,11 @@ def run(command_path = None):
         end_time = datetime.datetime.now()
         log.notice('Average test time: %s' % (str((end_time - start_time) / total)))
         log.notice('Testing time     : %s' % (str(end_time - start_time)))
+
+        if coverage_enabled:
+            coverage.executables = executables
+            coverage.run()
+
     except error.general, gerr:
         print gerr
         sys.exit(1)
