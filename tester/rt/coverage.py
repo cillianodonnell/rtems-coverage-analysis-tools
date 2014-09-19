@@ -1,7 +1,7 @@
 '''
 Created on Jul 7, 2014
 
-@author: Krzysztof Mięsowicz <krzysztof.miesowicz@gmail.com>
+@author: Krzysztof Miesowicz <krzysztof.miesowicz@gmail.com>
 '''
 from rtemstoolkit import path
 from rtemstoolkit import log
