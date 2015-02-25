@@ -14,6 +14,10 @@
 #include "ReportsText.h"
 #include "ReportsHtml.h"
 
+#if WIN32
+#include <direct.h>
+#endif
+
 namespace Coverage {
 
 ReportsBase::ReportsBase( time_t timestamp ):
@@ -35,7 +39,11 @@ FILE* ReportsBase::OpenFile(
   std::string  file;
 
   // Create the output directory if it does not already exist
+#if WIN32
+  sc = _mkdir( outputDirectory );
+#else
   sc = mkdir( outputDirectory,0755 );
+#endif
   if ( (sc == -1) && (errno != EEXIST) ) {
     fprintf(stderr, "Unable to create output directory %s\n", outputDirectory);
     return NULL;
@@ -212,7 +220,7 @@ void ReportsBase::WriteAnnotatedReport(
 
       if ( itr->isInstruction ) {
         if (!theCoverageMap->wasExecuted( itr->address - bAddress )){
-          annotation = "<== NOT EXECUTED";           
+          annotation = "<== NOT EXECUTED";
           state = A_NEVER_EXECUTED;
           id = theRanges->getId( itr->address );
         } else if (theCoverageMap->isBranch( itr->address - bAddress )) {
@@ -231,8 +239,8 @@ void ReportsBase::WriteAnnotatedReport(
 
       snprintf( textLine, LINE_LENGTH, "%-70s", itr->line.c_str() );
       line = textLine + annotation;
-      
-      PutAnnotatedLine( aFile, state, line, id); 
+
+      PutAnnotatedLine( aFile, state, line, id);
     }
 
     AnnotatedEnd( aFile );
@@ -254,7 +262,7 @@ void ReportsBase::WriteBranchReport(
   unsigned int                                    count;
   bool                                            hasBranches = true;
 
-  if ((SymbolsToAnalyze->getNumberBranchesFound() == 0) || 
+  if ((SymbolsToAnalyze->getNumberBranchesFound() == 0) ||
       (BranchInfoAvailable == false) )
      hasBranches = false;
 
@@ -264,7 +272,7 @@ void ReportsBase::WriteBranchReport(
     return;
 
   // If no branches were found of branch coverage is not supported
-  if ((SymbolsToAnalyze->getNumberBranchesFound() == 0) || 
+  if ((SymbolsToAnalyze->getNumberBranchesFound() == 0) ||
       (BranchInfoAvailable == false) ) {
 
     PutNoBranchInfo(report);
@@ -360,7 +368,7 @@ void ReportsBase::WriteCoverageReport(
  */
 void ReportsBase::WriteSizeReport(
   const char* const fileName
-) 
+)
 {
   Coverage::DesiredSymbols::symbolSet_t::iterator ditr;
   FILE*                                           report;
@@ -476,7 +484,7 @@ void  ReportsBase::WriteSummaryReport(
     "Uncovered ranges found   : %d\n",
     SymbolsToAnalyze->getNumberUncoveredRanges()
   );
-  if ((SymbolsToAnalyze->getNumberBranchesFound() == 0) || 
+  if ((SymbolsToAnalyze->getNumberBranchesFound() == 0) ||
       (BranchInfoAvailable == false) ) {
     fprintf( report, "No branch information available\n" );
   } else {
@@ -515,7 +523,7 @@ void GenerateReports()
 
   time_t timestamp;
 
- 
+
   timestamp = time(NULL); /* get current cal time */
   reports = new ReportsText(timestamp);
   reportList.push_back(reports);

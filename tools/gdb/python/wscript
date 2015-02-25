@@ -2,8 +2,12 @@
 # Install the RTEMS gdb python
 #
 
+def options(opt):
+    opt.load('python')
+
 def configure(conf):
     conf.load('python')
+    conf.check_python_version((2,6,6))
 
 def build(bld):
     source = ['__init__.py',
@@ -23,5 +27,6 @@ def build(bld):
               'supercore_printer.py',
               'threads.py',
               'watchdog.py']
-    bld(features = 'py', source = source, install_path = None)
-    bld.install_files('${PREFIX}/share/gdb/python/rtems', source)
+    bld(features = 'py',
+        source = source,
+        install_path = '${PREFIX}/share/gdb/python/rtems')

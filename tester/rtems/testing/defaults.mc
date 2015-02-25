@@ -1,6 +1,6 @@
 #
 # RTEMS Tools Project (http://www.rtems.org/)
-# Copyright 2010-2014 Chris Johns (chrisj@rtems.org)
+# Copyright 2010-2015 Chris Johns (chrisj@rtems.org)
 # All rights reserved.
 #
 # This file is part of the RTEMS Tools package in 'rtems-tools'.
@@ -50,7 +50,7 @@
 nil:                 none,    none,     ''
 
 # Paths
-_topdir:             dir,     required, '%{_cwd}'
+_topdir:             dir,     required, '%{_prefix}'
 _docdir:             dir,     none,     '%{_defaultdocdir}'
 _tmppath:            dir,     none,     '%{_topdir}/build/tmp'
 _tmproot:            dir,     none,     '%{_tmppath}/rt/%{_bset}'
@@ -75,7 +75,6 @@ _infodir:            dir,     none,     '%{_datarootdir}/info'
 _localedir:          dir,     none,     '%{_datarootdir}/locale'
 _localedir:          dir,     none,     '%{_datadir}/locale'
 _localstatedir:      dir,     none,     '%{_prefix}/var'
-_prefix:             dir,     none,     '%{_usr}'
 _usr:                dir,     none,     '/usr/local'
 _usrsrc:             dir,     none,     '%{_usr}/src'
 _var:                dir,     none,     '/usr/local/var'

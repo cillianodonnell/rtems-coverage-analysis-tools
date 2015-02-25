@@ -6,8 +6,8 @@
  */
 
 #include "SymbolSet.h"
-#include "rld-process.h"
 #include "rld.h"
+#include "rld-process.h"
 #include <iostream>
 #include <fstream>
 #include <cstdio>

@@ -1,0 +1,130 @@
+#
+# RTEMS Linker build script.
+#
+import sys
+
+version_major = 1
+version_minor = 0
+version_revision = 0
+
+def options(opt):
+    opt.load('compiler_c')
+    opt.load('compiler_cxx')
+
+def configure(conf):
+    conf.load('compiler_c')
+    conf.load('compiler_cxx')
+
+    conf.env.C_OPTS = conf.options.c_opts.split(',')
+    conf.env.RTEMS_VERSION = conf.options.rtems_version
+    conf.write_config_header('config.h')
+
+def build(bld):
+    #
+    # Build the doxygen documentation.
+    #
+    if bld.cmd == 'doxy':
+        bld(features = 'doxygen',
+            doxyfile = 'rtl-host.conf')
+        return
+
+    #
+    # The local configuration.
+    #
+    conf = {}
+
+    #
+    # Build flags.
+    #
+    rtemstoolkit = '../rtemstoolkit'
+    conf['includes'] = [rtemstoolkit,
+                        rtemstoolkit + '/elftoolchain/libelf',
+                        rtemstoolkit + '/elftoolchain/common',
+                        rtemstoolkit + '/libiberty']
+    if bld.env.DEST_OS == 'win32':
+        conf['includes'] += [rtemstoolkit + '/win32']
+    conf['warningflags'] = ['-Wall', '-Wextra', '-pedantic']
+    conf['optflags'] = bld.env.C_OPTS
+    conf['cflags'] = ['-pipe', '-g'] + conf['optflags']
+    conf['cxxflags'] = ['-pipe', '-g'] + conf['optflags']
+    conf['linkflags'] = ['-g']
+
+    #
+    # The list of modules.
+    #
+    modules = ['rld', 'elf', 'iberty']
+
+    #
+    # Build the linker.
+    #
+    bld.program(target = 'rtems-ld',
+                source = ['rtems-ld.cpp'],
+                defines = ['HAVE_CONFIG_H=1', 'RTEMS_VERSION=' + bld.env.RTEMS_VERSION],
+                includes = ['.'] + conf['includes'],
+                cflags = conf['cflags'] + conf['warningflags'],
+                cxxflags = conf['cxxflags'] + conf['warningflags'],
+                linkflags = conf['linkflags'],
+                use = modules)
+
+    #
+    # Build the ra linker.
+    #
+    bld.program(target = 'rtems-ra',
+                source = ['rtems-ra.cpp'],
+                defines = ['HAVE_CONFIG_H=1', 'RTEMS_VERSION=' + bld.env.RTEMS_VERSION],
+                includes = ['.'] + conf['includes'],
+                cflags = conf['cflags'] + conf['warningflags'],
+                cxxflags = conf['cxxflags'] + conf['warningflags'],
+                linkflags = conf['linkflags'],
+                use = modules)
+
+    #
+    # Build the trace linker.
+    #
+    bld.program(target = 'rtems-tld',
+                source = ['rtems-tld.cpp'],
+                defines = ['HAVE_CONFIG_H=1', 'RTEMS_VERSION=' + bld.env.RTEMS_VERSION],
+                includes = ['.'] + conf['includes'],
+                cflags = conf['cflags'] + conf['warningflags'],
+                cxxflags = conf['cxxflags'] + conf['warningflags'],
+                linkflags = conf['linkflags'],
+                use = modules)
+    bld.install_files('${PREFIX}/share/rtems/trace-linker',
+                      ['libc.ini',
+                       'libc-heap.ini',
+                       'rtems.ini',
+                       'rtems-api.ini',
+                       'rtems-score.ini',
+                       'rtems-score-object.ini',
+                       'rtems-score-thread.ini',
+                       'rtems-score-heap.ini',
+                       'rtems-score-coremutex.ini',
+                       'rtld-base.ini',
+                       'rtld-print.ini'])
+
+    #
+    # Build the symbols.
+    #
+    bld.program(target = 'rtems-syms',
+                source = ['rtems-syms.cpp'],
+                defines = ['HAVE_CONFIG_H=1', 'RTEMS_VERSION=' + bld.env.RTEMS_VERSION],
+                includes = ['.'] + conf['includes'],
+                cflags = conf['cflags'] + conf['warningflags'],
+                cxxflags = conf['cxxflags'] + conf['warningflags'],
+                linkflags = conf['linkflags'],
+                use = modules)
+
+    #
+    # Build the RAP utility.
+    #
+    bld.program(target = 'rtems-rap',
+                source = ['rtems-rapper.cpp'],
+                defines = ['HAVE_CONFIG_H=1', 'RTEMS_VERSION=' + bld.env.RTEMS_VERSION],
+                includes = ['.'] + conf['includes'],
+                cflags = conf['cflags'] + conf['warningflags'],
+                cxxflags = conf['cxxflags'] + conf['warningflags'],
+                linkflags = conf['linkflags'],
+                use = modules)
+
+def tags(ctx):
+    ctx.exec_command('etags $(find . -name \*.[sSch])', shell = True)
