@@ -1,6 +1,6 @@
 #
 # RTEMS Tools Project (http://www.rtems.org/)
-# Copyright 2010-2014 Chris Johns (chrisj@rtems.org)
+# Copyright 2015 On-Line Applications Research Corporation (OAR).
 # All rights reserved.
 #
 # This file is part of the RTEMS Tools package in 'rtems-tools'.
@@ -42,12 +42,13 @@
 #
 
 #
-# The or1ksim BSP
+# The v850e2sim BSP
 #
 [global]
-bsp:                      none,    none,     'or1ksim'
+bsp:              none,    none,     'v850e2sim'
 
-[or1ksim]
-or1ksim:      none,    none,  '%{_rtscripts}/qemu.cfg'
-or1ksim_arch: none,    none,  'or32'
-or1ksim_opts: none,    none,  '%{qemu_opts_base} %{qemu_opts_no_net} -m 32M'
+[v850e2sim]
+v850e2sim:              none,    none,     '%{_rtscripts}/run.cfg'
+v850e2sim_arch:         none,    none,     'v850'
+bsp_run_cmd:      none,    none,     '%{rtems_tools}/%{bsp_arch}-rtems%{rtems_version}-run'
+bsp_run_opts:     none,    none,     '-a -nouartrx'

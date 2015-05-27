@@ -1,6 +1,6 @@
 #
 # RTEMS Tools Project (http://www.rtems.org/)
-# Copyright 2010-2014 Chris Johns (chrisj@rtems.org)
+# Copyright 2015 On-Line Applications Research Corporation (OAR).
 # All rights reserved.
 #
 # This file is part of the RTEMS Tools package in 'rtems-tools'.
@@ -42,15 +42,15 @@
 #
 
 #
-# The GDB ARM Simulator  BSP
+# The arm920 BSP
 #
 [global]
-bsp:               none,    none,     'arm920'
+bsp:                 none,    none,     'arm920'
 
 [arm920]
-arm920:            none,    none,     '%{_rtscripts}/gdb.cfg'
-arm920_arch:       none,    none,     'arm'
-gdb_script:        none,    none,     'arm920_gdb_script'
-arm920_gdb_script: none,    none,     '''target sim -m (8 * 1024 * 1024)
-                                         load
-                                         run'''
+arm920:                 none,    none,     '%{_rtscripts}/gdb.cfg'
+arm920_arch:            none,    none,     'arm'
+gdb_script:          none,    none,     'arm920_gdb_script'
+arm920_gdb_script:      none,    none,     '''target sim
+                                           load
+                                           run'''

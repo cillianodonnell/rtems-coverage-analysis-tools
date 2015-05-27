@@ -94,12 +94,14 @@ def build(bld):
                        'libc-heap.ini',
                        'rtems.ini',
                        'rtems-api.ini',
+                       'rtems-posix.ini',
                        'rtems-score.ini',
                        'rtems-score-object.ini',
                        'rtems-score-thread.ini',
                        'rtems-score-heap.ini',
                        'rtems-score-coremutex.ini',
                        'rtld-base.ini',
+                       'rtld-trace-buffer.ini',
                        'rtld-print.ini'])
 
     #
