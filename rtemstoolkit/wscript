@@ -93,7 +93,7 @@ def build(bld):
               install_path = None,
               source = rld_source + rtems_utils + compression,
               defines = ['HAVE_CONFIG_H=1',
-                         'RTEMS_VERSION=' + bld.env.RTEMS_VERSION,
+                         'RTEMS_VERSION=' + str(bld.env.RTEMS_VERSION),
                          'FASTLZ_LEVEL=1'],
               includes = ['.'] + conf['includes'],
               cflags = conf['cflags'] + conf['warningflags'],
