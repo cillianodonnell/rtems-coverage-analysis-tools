@@ -42,23 +42,21 @@
 #
 
 #
-# The i386/pc386 QEMU BSP
+# The sparc/leon2 QEMU BSP
 #
 
-hda:	none,	dir,	'%{_rtscripts}/coverage/rtems-boot.img'
-
 [global]
-bsp:                      none,    none,     'pc386'
+bsp:                      none,    none,     'leon2'
 coverage_supported:	      none,	   none,	   '1'
 
-[pc386]
-pc386:                    none,    none,     '%{_rtscripts}/qemu.cfg'
-pc386_arch:               none,    none,     'i386'
-pc386_opts:               none,    none,     '-m 128 -boot b -hda %{hda} %{qemu_opts_base} -append "--console=com1;boot;"'
+[leon2]
+leon2:                    none,    none,     '%{_rtscripts}/qemu.cfg'
+leon2_arch:               none,    none,     'sparc'
+leon2_opts:               none,    none,     '-nographic -M at697 -append "--console=com1;boot;"'
 
 [coverage]
 format:		                none,    none,     'QEMU'
-target:		                none,    none,     'i386-rtems4.11'
+target:		                none,    none,     'sparc-rtems4.11'
 explanations:	            none,    none,     '%{_rtscripts}/coverage/Explanations.txt'
 coverageExtension:	      none,    none,     'exe.cov'
 gcnosFile:	              none,    none,     '%{_rtscripts}/coverage/rtems.gcnos'
