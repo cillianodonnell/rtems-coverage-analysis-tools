@@ -363,7 +363,7 @@ def output_handler(text):
     log.notice(text, stdout_only = False)
 
 if __name__ == "__main__":
-    c = coverage_run("/home/krzysztof/coverage/kmtest","/home/krzysztof/development/rtems/src/rtems-tools/tester")
-    c.prepareEnvironment()
-    c.executables = ["/home/krzysztof/development/rtems/src/b-pc386/i386-rtems4.11/c/pc386/testsuites/samples/hello/hello.exe"]
-    c.run()
+#    c = coverage_run("/home/krzysztof/coverage/kmtest","/home/krzysztof/development/rtems/src/rtems-tools/tester")
+#    c.prepareEnvironment()
+#    c.executables = ["/home/krzysztof/development/rtems/src/b-pc386/i386-rtems4.11/c/pc386/testsuites/samples/hello/hello.exe"]
+#    c.run()
