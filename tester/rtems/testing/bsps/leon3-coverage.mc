@@ -42,17 +42,17 @@
 #
 
 #
-# The sparc/leon2 QEMU BSP
+# The sparc/leon3 QEMU BSP
 #
 
 [global]
-bsp:                      none,    none,     'leon2'
+bsp:                      none,    none,     'leon3'
 coverage_supported:	      none,	   none,	   '1'
 
-[leon2]
-leon2:                    none,    none,     '%{_rtscripts}/qemu.cfg'
-leon2_arch:               none,    none,     'sparc'
-leon2_opts:               none,    none,     '-M at697 -append "--console=com1;boot;"'
+[leon3]
+leon3:                    none,    none,     '%{_rtscripts}/qemu.cfg'
+leon3_arch:               none,    none,     'sparc'
+leon3_opts:               none,    none,     '-M leon3_generic -m 64M "--console=com1;boot;"'
 
 [coverage]
 format:		                none,    none,     'QEMU'
