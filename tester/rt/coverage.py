@@ -44,13 +44,18 @@ class summary:
         self.branches_alwaysTaken = self._getValueFromNextLineWithoutColon(summaryFile)
         self.branches_neverTaken = self._getValueFromNextLineWithoutColon(summaryFile)
         summaryFile.close()
-
-        self.percentage_branchesCovered = 1 - float(self.branches_uncovered) / float(self.branches_total)
+        if not self.branches_uncovered == '' and not self.branches_total == '':
+            self.percentage_branchesCovered = 1 - float(self.branches_uncovered) / float(self.branches_total)
+        else:
+            self.percentage_branchesCovered = 0.0
         return
 
     def _getValueFromNextLineWithColon(self, summaryFile):
         line = summaryFile.readline()
-        return line.split(':')[1].strip()
+        if ':' in line:
+            return line.split(':')[1].strip()
+        else:
+            return ''
 
     def _getValueFromNextLineWithoutColon(self, summaryFile):
         line = summaryFile.readline()
