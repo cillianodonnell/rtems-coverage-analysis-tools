@@ -224,7 +224,8 @@ namespace Coverage {
      */
     void createCoverageMap(
       const std::string& symbolName,
-      uint32_t           size
+      uint32_t           size,
+      ExecutableInfo* const theExecutable
     );
 
     /*!

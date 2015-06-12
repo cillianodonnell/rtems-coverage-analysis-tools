@@ -112,7 +112,7 @@ namespace Coverage {
 
       // Create a unified coverage map for the symbol.
       SymbolsToAnalyze->createCoverageMap(
-        symbolName, endAddress - lowAddress + 1
+        symbolName, endAddress - lowAddress + 1, executableInfo
       );
     }
   }

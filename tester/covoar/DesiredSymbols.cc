@@ -336,12 +336,15 @@ namespace Coverage {
 
   void DesiredSymbols::createCoverageMap(
     const std::string& symbolName,
-    uint32_t           size
+    uint32_t           size,
+    ExecutableInfo* const theExecutable
   )
   {
     CoverageMapBase*      aCoverageMap;
     uint32_t              highAddress;
     symbolSet_t::iterator itr;
+
+    theExecutable->dumpExecutableInfo();
 
     // Ensure that the symbol is a desired symbol.
     itr = set.find( symbolName );
