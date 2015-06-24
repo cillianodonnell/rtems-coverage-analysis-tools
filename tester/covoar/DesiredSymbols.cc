@@ -344,7 +344,7 @@ namespace Coverage {
     uint32_t              highAddress;
     symbolSet_t::iterator itr;
 
-    theExecutable->dumpExecutableInfo();
+    //theExecutable->dumpExecutableInfo();
 
     // Ensure that the symbol is a desired symbol.
     itr = set.find( symbolName );

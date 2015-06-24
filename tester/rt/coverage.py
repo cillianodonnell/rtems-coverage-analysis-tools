@@ -256,7 +256,7 @@ class covoar(object):
             log.stderr("Skipping " + setName)
             return
 
-        command = "covoar -C" + covoarConfigFile + " -S " + symbolFile + " -O " + covoarResultDir + " " + path.join(self.tracesDir, "*.exe")
+        command = "covoar -v -C" + covoarConfigFile + " -S " + symbolFile + " -O " + covoarResultDir + " " + path.join(self.tracesDir, "*.exe")
         log.notice("Running covoar for " + setName, stdout_only=True)
         log.notice(command, stdout_only=True)
         executor = execute.execute(verbose=True, output=output_handler)
@@ -359,7 +359,7 @@ class coverage_run(object):
 
     def _cleanup(self):
         log.notice("Cleaning workspace up")
-        path.removeall(self.tracesDir)
+        #path.removeall(self.tracesDir)
 
     def _summarize(self):
         log.notice("Coverage analysis finished. You can find results in " + self.targetDir)
@@ -369,7 +369,7 @@ def output_handler(text):
 
 if __name__ == "__main__":
     print "coverage main"
-#    c = coverage_run("/home/krzysztof/coverage/kmtest","/home/krzysztof/development/rtems/src/rtems-tools/tester")
-#    c.prepareEnvironment()
-#    c.executables = ["/home/krzysztof/development/rtems/src/b-pc386/i386-rtems4.11/c/pc386/testsuites/samples/hello/hello.exe"]
-#    c.run()
+    c = coverage_run("/home/hf/coverage_test_leon2","/home/hf/development/rtems/src/rtems-tools/tester")
+    c.prepareEnvironment()
+    c.executables = ["/home/hf/development/rtems/src/b-leon2/sparc-rtems4.11/c/leon2/testsuites/samples/hello/hello.exe"]
+    c.run()

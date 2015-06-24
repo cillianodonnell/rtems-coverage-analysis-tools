@@ -52,7 +52,7 @@ coverage_supported:	      none,	   none,	   '1'
 [leon2]
 leon2:                    none,    none,     '%{_rtscripts}/qemu.cfg'
 leon2_arch:               none,    none,     'sparc'
-leon2_opts:               none,    none,     '-M at697 -append "--console=com1;boot;"'
+leon2_opts:               none,    none,     '-nographic -machine at697'
 
 [coverage]
 format:		                none,    none,     'QEMU'

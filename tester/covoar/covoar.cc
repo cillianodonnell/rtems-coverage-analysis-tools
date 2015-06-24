@@ -94,7 +94,7 @@ Configuration::Options_t Options[] = {
   { "explanations",         NULL },
   { "format",               NULL },
   { "symbolsFile",          NULL },
-  { "symbolSetFile",		NULL },
+  { "symbolSetFile",		    NULL },
   { "outputDirectory",      NULL },
   { "executableExtension",  NULL },
   { "coverageExtension",    NULL },
@@ -183,7 +183,7 @@ int main(
       case 'E': explanations          = optarg; break;
       case 'f': format                = optarg; break;
       case 's': symbolsFile           = optarg; break;
-      case 'S': symbolSetFile		  = optarg; break;
+      case 'S': symbolSetFile		      = optarg; break;
       case 'T': target                = optarg; break;
       case 'O': outputDirectory       = optarg; break;
       case 'v': Verbose               = true;   break;
