@@ -371,5 +371,5 @@ if __name__ == "__main__":
     print "coverage main"
     c = coverage_run("/home/hf/coverage_test_leon2","/home/hf/development/rtems/src/rtems-tools/tester")
     c.prepareEnvironment()
-    c.executables = ["/home/hf/development/rtems/src/b-leon2/sparc-rtems4.11/c/leon2/testsuites/samples/hello/hello.exe"]
+    c.executables = ["/home/hf/development/rtems/src/b-leon2/sparc-rtems4.11/c/leon2/testsuites/samples/hello/hello.ralf"]
     c.run()
