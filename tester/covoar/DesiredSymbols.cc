@@ -368,9 +368,9 @@ namespace Coverage {
           stderr,
           "ERROR: DesiredSymbols::createCoverageMap - Attempt to create "
           "unified coverage maps for %s with different sizes (%s/%d != %s/%d)\n",
-          exefileName.c_str(),
-          symbolName.c_str(),
           
+          symbolName.c_str(),
+          exefileName.c_str(),
           itr->second.stats.sizeInBytes,
           itr->second.sourceFile->getFileName().c_str(),
           size

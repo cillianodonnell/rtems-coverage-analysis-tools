@@ -108,7 +108,12 @@ namespace Coverage {
            itr++ ) {
 
         aCoverageMap->setIsStartOfInstruction( itr->address );
+        if (strcmp(symbolName.c_str(), "_Thread_Handler"))
+        {
+          fprintf(stderr, "%s\n", itr->line.c_str());
+        }
       }
+      
 
       // Create a unified coverage map for the symbol.
       SymbolsToAnalyze->createCoverageMap(
