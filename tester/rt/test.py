@@ -198,7 +198,8 @@ def run(command_path = None):
                     '--debug-trace': 'Debug trace based on specific flags',
                     '--filter':      'Glob that executables must match to run (default: ' +
                               default_exefilter + ')',
-                    '--stacktrace':  'Dump a stack trace on a user termination (^C)'}
+                    '--stacktrace':  'Dump a stack trace on a user termination (^C)',
+                    '--rtems-cpukit': 'The path to the cpukit directory ( including /cpukit )'}
         opts = options.load(sys.argv,
                             optargs = optargs,
                             command_path = command_path)
@@ -248,7 +249,11 @@ def run(command_path = None):
             opts.defaults.load('%%{_configdir}/coverage.mc')
             if not check.check_exe('__covoar', opts.defaults['__covoar']):
                 raise error.general("Covoar not found!")
-            coverage = coverage.coverage_run(opts.defaults)
+
+            path_to_cpukit = opts.find_arg('--rtems-cpukit')
+            if not path_to_cpukit:
+                raise error.general("Path to cpukit directory not provided")
+            coverage = coverage.coverage_run(opts.defaults, path_to_cpukit[1])
             coverage.prepareEnvironment();
 
         report_mode = opts.find_arg('--report-mode')

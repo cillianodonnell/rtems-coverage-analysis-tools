@@ -11,6 +11,8 @@ import shutil
 import os
 from datetime import datetime
 
+import options
+
 class summary:
     def __init__(self, p_summaryDir):
         self.summaryFilePath = path.join(p_summaryDir, "summary.txt")
@@ -179,7 +181,7 @@ class symbolsConfiguration(object):
                     name=SYMBOLSET_NAME_N
                     lib=PATH_TO_LIBRARY        ''')
 
-    def load(self, symbolSetConfigFile):
+    def load(self, symbolSetConfigFile, path_to_cpukit):
         scf = open(symbolSetConfigFile, 'r')
         for line in scf:
             try:
@@ -190,10 +192,13 @@ class symbolsConfiguration(object):
                     if(len(splitted) == 2):
                         key = splitted[0].strip()
                         value = splitted[1].strip()
+
                         if key == 'name':
                             self.symbolSets[-1].name = value
                         elif key == 'lib':
-                            self.symbolSets[-1].libs.append(value)
+                            lib = os.path.join(path_to_cpukit, value)
+                            log.stderr(lib + "\n")
+                            self.symbolSets[-1].libs.append(lib)
                         else:
                             log.stderr("Invalid key : " + key + " in symbol set configuration file " + symbolSetConfigFile)
                     else:
@@ -277,7 +282,7 @@ class coverage_run(object):
     Coverage analysis support for rtems-test
     '''
 
-    def __init__(self, p_macros):
+    def __init__(self, p_macros, path_to_cpukit):
         '''
         Constructor
         '''
@@ -292,6 +297,7 @@ class coverage_run(object):
         self.config_map = self.macros.macros['coverage']
         self.executables = None
         self.symbolSets = []
+        self.path_to_cpukit = path_to_cpukit
 
     def prepareEnvironment(self):
         if(path.exists(self.tracesDir)):
@@ -327,7 +333,7 @@ class coverage_run(object):
         self._linkExecutables()
 
         symbolConfig = symbolsConfiguration()
-        symbolConfig.load(self.symbolConfigPath)
+        symbolConfig.load(self.symbolConfigPath, self.path_to_cpukit)
 
         for sset in symbolConfig.symbolSets:
             if sset.isValid():
