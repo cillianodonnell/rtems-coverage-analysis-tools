@@ -125,9 +125,10 @@ class test_run(object):
         if self.test:
             self.test.kill()
 
-def find_executables(paths, glob):
+def find_executables(paths, glob, path_to_builddir):
     executables = []
     for p in paths:
+        p = os.path.join(path_to_builddir, p)
         if path.isfile(p):
             executables += [p]
         elif path.isdir(p):
@@ -199,7 +200,7 @@ def run(command_path = None):
                     '--filter':      'Glob that executables must match to run (default: ' +
                               default_exefilter + ')',
                     '--stacktrace':  'Dump a stack trace on a user termination (^C)',
-                    '--rtems-cpukit': 'The path to the cpukit directory ( including /cpukit )'}
+                    '--rtems-builddir': 'The path to the build directory ( including e.g. /b-leon2/ )'}
         opts = options.load(sys.argv,
                             optargs = optargs,
                             command_path = command_path)
@@ -241,6 +242,10 @@ def run(command_path = None):
             raise error.general('BSP script not found: %s' % (bsp))
         bsp_config = opts.defaults.expand(opts.defaults[bsp])
 
+        path_to_builddir= opts.find_arg('--rtems-builddir')
+        if not path_to_builddir:
+            raise error.general("Path to build directory not provided")
+
         coverage_enabled = opts.coverage()
         if coverage_enabled:
             import coverage
@@ -250,10 +255,7 @@ def run(command_path = None):
             if not check.check_exe('__covoar', opts.defaults['__covoar']):
                 raise error.general("Covoar not found!")
 
-            path_to_cpukit = opts.find_arg('--rtems-cpukit')
-            if not path_to_cpukit:
-                raise error.general("Path to cpukit directory not provided")
-            coverage = coverage.coverage_run(opts.defaults, path_to_cpukit[1])
+            coverage = coverage.coverage_run(opts.defaults, path_to_builddir[1])
             coverage.prepareEnvironment();
 
         report_mode = opts.find_arg('--report-mode')
@@ -265,7 +267,7 @@ def run(command_path = None):
             report_mode = report_mode[1]
         else:
             report_mode = 'failures'
-        executables = find_executables(opts.params(), exe_filter)
+        executables = find_executables(opts.params(), exe_filter, path_to_builddir[1])
         if len(executables) == 0:
             raise error.general('no executables supplied')
         start_time = datetime.datetime.now()

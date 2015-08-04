@@ -181,7 +181,7 @@ class symbolsConfiguration(object):
                     name=SYMBOLSET_NAME_N
                     lib=PATH_TO_LIBRARY        ''')
 
-    def load(self, symbolSetConfigFile, path_to_cpukit):
+    def load(self, symbolSetConfigFile, path_to_builddir):
         scf = open(symbolSetConfigFile, 'r')
         for line in scf:
             try:
@@ -196,7 +196,7 @@ class symbolsConfiguration(object):
                         if key == 'name':
                             self.symbolSets[-1].name = value
                         elif key == 'lib':
-                            lib = os.path.join(path_to_cpukit, value)
+                            lib = os.path.join(path_to_builddir, value)
                             log.stderr(lib + "\n")
                             self.symbolSets[-1].libs.append(lib)
                         else:
@@ -282,7 +282,7 @@ class coverage_run(object):
     Coverage analysis support for rtems-test
     '''
 
-    def __init__(self, p_macros, path_to_cpukit):
+    def __init__(self, p_macros, path_to_builddir):
         '''
         Constructor
         '''
@@ -297,7 +297,7 @@ class coverage_run(object):
         self.config_map = self.macros.macros['coverage']
         self.executables = None
         self.symbolSets = []
-        self.path_to_cpukit = path_to_cpukit
+        self.path_to_builddir= path_to_builddir
 
     def prepareEnvironment(self):
         if(path.exists(self.tracesDir)):
@@ -333,7 +333,7 @@ class coverage_run(object):
         self._linkExecutables()
 
         symbolConfig = symbolsConfiguration()
-        symbolConfig.load(self.symbolConfigPath, self.path_to_cpukit)
+        symbolConfig.load(self.symbolConfigPath, self.path_to_builddir)
 
         for sset in symbolConfig.symbolSets:
             if sset.isValid():
