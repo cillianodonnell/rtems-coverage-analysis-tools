@@ -52,7 +52,7 @@ namespace Coverage {
     #define PRINT_TEXT_ITEM( _t, _n ) \
        fprintf( \
          aFile, \
-         "<li>%s (<a href=\"%s\">text</a>)\n", \
+         "<li>%s (<a href=\"%s\">text</a>)</li>\n", \
         _t, _n );
 
     FILE*  aFile;
@@ -93,7 +93,7 @@ namespace Coverage {
 
     fprintf(
       aFile,
-      "</li>\n"
+      "</ul>\n"
       "<!-- INSERT PROJECT SPECIFIC ITEMS HERE -->\n"
       "</html>\n"
     );
