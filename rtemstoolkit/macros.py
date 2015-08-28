@@ -73,6 +73,7 @@ class macros:
             self.read_map_locked = False
             self.write_map = 'global'
             self.rtpath = path.abspath(path.dirname(inspect.getfile(macros)))
+            print "rtpath " + self.rtpath + "\n"
             if path.dirname(self.rtpath).endswith('/share/rtems'):
                 self.prefix = path.dirname(self.rtpath)[:-len('/share/rtems')]
             else:
@@ -87,6 +88,7 @@ class macros:
                                                'required',
                                                path.abspath(self.expand(rtdir)))
             self.macros['global']['_rttop'] = ('dir', 'required', self.prefix)
+            print "prefix: " + str(self.macros['global']['_prefix']) + "\n"
         else:
             self.macros = {}
             for m in original.macros:

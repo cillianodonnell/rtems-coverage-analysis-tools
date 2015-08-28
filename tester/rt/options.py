@@ -98,6 +98,8 @@ def load(args, optargs = None,
     # The command line contains the base defaults object all build objects copy
     # and modify by loading a configuration.
     #
+    log.stderr('rtdir: ')
+    print 'rtdir: ' + rtdir + '\n'
     opts = command_line(args,
                         optargs,
                         macros.macros(name = defaults, rtdir = rtdir),

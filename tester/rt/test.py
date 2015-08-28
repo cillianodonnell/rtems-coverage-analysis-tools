@@ -222,6 +222,8 @@ def run(command_path = None):
         job_trace = 'jobs' in debug_trace.split(',')
         rtems_tools = opts.find_arg('--rtems-tools')
         if rtems_tools:
+            bla = '%{_prefix}'
+            print "prefixx: " + bla
             if len(rtems_tools) != 2:
                 raise error.general('invalid RTEMS tools option')
             rtems_tools = rtems_tools[1]
@@ -326,6 +328,8 @@ def run(command_path = None):
         if coverage_enabled:
             coverage.config_map = opts.defaults.macros['coverage']
             coverage.executables = executables
+            print [c for c in coverage.config_map]
+            print [e for e in executables]
             coverage.run()
 
     except error.general, gerr:

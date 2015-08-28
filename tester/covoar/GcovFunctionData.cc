@@ -67,7 +67,7 @@ namespace Gcov {
     if ( symbolInfo != NULL )
       coverageMap = symbolInfo->unifiedCoverageMap;
 
-#if 0
+#if 1
     if ( coverageMap == NULL) {
       fprintf(
         stderr,
