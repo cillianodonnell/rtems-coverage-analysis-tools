@@ -503,9 +503,9 @@ namespace Gcov {
     //  sprintf( command, "cp /home/hf/development/rtems/src/rtems/cpukit/%s/src/%s /home/hf/development/rtems/b-pc386/i386-rtems4.11/c/pc386/cpukit/rtems/src/%s", "rtems", source_file_name, target_file_name);
     //}
     
-    fprintf (stderr, "> %s\n", command );
-    system( command );
-    memset(&command, 0, sizeof(command));
+    //fprintf (stderr, "> %s\n", command );
+    //system( command );
+    //memset(&command, 0, sizeof(command));
 
     sprintf( command, "( cd %s && gcov %s &>> gcov.log)", path, target_file_name);
     fprintf (stderr, "> %s\n", command );

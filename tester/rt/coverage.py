@@ -239,6 +239,14 @@ class symbolSet(object):
             f.write("\t lib=" + lib + '\n')
         f.close()
 
+class gcnos(object):
+    def create_gcnos_file(self, gcnos_config_file_path, gcnos_file_path, path_to_build_dir):
+        with open(gcnos_file_path, 'w') as gcnos_file:
+            with open(gcnos_config_file_path, 'r') as config_file:
+                for line in config_file:
+                    if line.strip():
+                        gcnos_file.write(path.join(path_to_build_dir, line))
+
 class covoar(object):
     '''
     Covoar runner
@@ -250,7 +258,7 @@ class covoar(object):
         self.tracesDir = tracesDir
         self.covoarSrcDir = covoarSrcDir
 
-    def run(self, setName, covoarConfigFile, symbolFile):
+    def run(self, setName, covoarConfigFile, symbolFile, gcnos_file):
         covoarResultDir = path.join(self.baseResultDir, setName)
 
         if (not path.exists(covoarResultDir)):
@@ -262,6 +270,8 @@ class covoar(object):
             return
 
         command = "covoar -v -C" + covoarConfigFile + " -S " + symbolFile + " -O " + covoarResultDir + " " + path.join(self.tracesDir, "*.exe")
+        if (path.exists(gcnos_file)):
+            command = command + " -g " + gcnos_file
         log.notice("Running covoar for " + setName, stdout_only=True)
         log.notice(command, stdout_only=True)
         executor = execute.execute(verbose=True, output=output_handler)
@@ -298,6 +308,7 @@ class coverage_run(object):
         self.executables = None
         self.symbolSets = []
         self.path_to_builddir= path_to_builddir
+        self.gcnos_file_path = path.join(self.coverageConfigPath, "rtems.gcnos")
 
     def prepareEnvironment(self):
         if(path.exists(self.tracesDir)):
@@ -311,7 +322,7 @@ class coverage_run(object):
         ccf.write("target = " + self.config_map['target'][2] + '\n')
         ccf.write("explanations = " + self.macros.expand(self.config_map['explanations'][2]) + '\n')
         ccf.write("coverageExtension = " + self.config_map['coverageextension'][2] + '\n')
-        ccf.write("gcnosFile = " + self.macros.expand(self.config_map['gcnosfile'][2]) + '\n')
+        #ccf.write("gcnosFile = " + self.macros.expand(self.config_map['gcnosfile'][2]) + '\n')
         ccf.write("executableExtension = " + self.config_map['executableextension'][2] + '\n')
         ccf.write("projectName = " + self.config_map['projectname'][2] + '\n')
         ccf.close()
@@ -334,6 +345,11 @@ class coverage_run(object):
 
         symbolConfig = symbolsConfiguration()
         symbolConfig.load(self.symbolConfigPath, self.path_to_builddir)
+        # create gcnosConfiguration
+        # load paths to gcno files, join paths with path_to_builddir
+        # write gcnos file to traces dir
+        gcnos_file = path.join(self.tracesDir, "rtems.gcnos") 
+        gcnos().create_gcnos_file(self.gcnos_file_path, gcnos_file, self.path_to_builddir)
 
         for sset in symbolConfig.symbolSets:
             if sset.isValid():
@@ -342,7 +358,7 @@ class coverage_run(object):
                 self.symbolSets.append(sset.name)
 
                 covoar_run = covoar(self.testDir, self.symbolConfigPath, self.tracesDir, path.join(self.rtdir, 'covoar'))
-                covoar_run.run(sset.name, covoarConfigFile, symbolSetFile)
+                covoar_run.run(sset.name, covoarConfigFile, symbolSetFile, gcnos_file)
             else:
                 log.stderr("Invalid symbol set " + sset.name + ". Skipping covoar run.")
 
