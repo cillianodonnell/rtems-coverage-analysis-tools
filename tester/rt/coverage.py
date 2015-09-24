@@ -371,7 +371,11 @@ class coverage_run(object):
 
         for exe in self.executables:
             dst = path.join(self.tracesDir, path.basename(exe))
-            os.link(exe, dst)
+            try:
+                os.link(exe, dst)
+            except OSError, e:
+                log.stderr("creating hardlink from " + path.abspath(exe) + " to " + dst + " failed!")
+                raise
         log.notice("Symlinks made")
 
     def _generateReports(self):
