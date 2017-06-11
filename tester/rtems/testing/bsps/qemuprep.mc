@@ -50,4 +50,4 @@ bsp:                      none,    none,     'qemuprep'
 [qemuprep]
 qemuprep:      none,    none,  '%{_rtscripts}/qemu.cfg'
 qemuprep_arch: none,    none,  'ppc'
-qemuprep_opts: none,    none,  '%{qemu_opts_base} %{qemu_opts_no_net} -M prep -m 256M'
+qemuprep_opts: none,    none,  '%{qemu_opts_base} %{qemu_opts_no_net} -M prep'

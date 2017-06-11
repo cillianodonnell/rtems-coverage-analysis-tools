@@ -52,7 +52,7 @@ coverage_supported:	      none,	   none,	   '1'
 [leon3]
 leon3:                    none,    none,     '%{_rtscripts}/qemu.cfg'
 leon3_arch:               none,    none,     'sparc'
-leon3_opts:               none,    none,     '-M leon3_generic -m 64M "--console=com1;boot;"'
+leon3_opts:               none,    none,     '%{qemu_opts_base} %{qemu_opts_no_net} -M leon3_generic'
 
 [coverage]
 format:		                none,    none,     'QEMU'

@@ -50,4 +50,4 @@ bsp:                      none,    none,     'lm32_evr'
 [lm32_evr]
 lm32_evr:      none,    none,  '%{_rtscripts}/qemu.cfg'
 lm32_evr_arch: none,    none,  'lm32'
-lm32_evr_opts: none,    none,  '%{qemu_opts_base} %{qemu_opts_no_net} -M lm32-evr '
+lm32_evr_opts: none,    none,  '%{qemu_opts_base} %{qemu_opts_no_net}'

@@ -52,7 +52,7 @@ bsp:                      none,    none,     'leon2'
 [leon2]
 leon2:                    none,    none,     '%{_rtscripts}/qemu.cfg'
 leon2_arch:               none,    none,     'sparc'
-leon2_opts:               none,    none,     '%{qemu_opts_base} %{qemu_opts_no_net}'
+leon2_opts:               none,    none,     '%{qemu_opts_base} %{qemu_opts_no_net} -M at697'
 
 #[coverage]
 #format:		                none,    none,     'QEMU'

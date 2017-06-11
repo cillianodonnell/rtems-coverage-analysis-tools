@@ -45,7 +45,7 @@
 # The i386/pc386 QEMU BSP
 #
 
-#hda:	none,	dir,	'%{_rtscripts}/coverage/rtems-boot.img'
+hda:	none,	dir,	'%{_rtscripts}/coverage/rtems-boot.img'
 
 [global]
 bsp:                      none,    none,     'pc386'
@@ -54,7 +54,7 @@ bsp:                      none,    none,     'pc386'
 [pc386]
 pc386:      none,    none,  '%{_rtscripts}/qemu.cfg'
 pc386_arch: none,    none,  'i386'
-pc386_opts: none,    none,  '%{qemu_opts_base} %{qemu_opts_no_net} -m 128M -M isapc'
+pc386_opts: none,    none,  '-m 128 -boot b -hda %{hda} %{qemu_opts_base} -append "--console=com1;boot;"'
 
 #[coverage]
 #format:		none, none, 'QEMU'
