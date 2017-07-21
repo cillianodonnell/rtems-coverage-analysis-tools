@@ -71,7 +71,7 @@ namespace Gcov {
     }
 
     // Debug message
-    fprintf( stderr, "Readning file: %s\n",  gcnoFileName);
+    fprintf( stderr, "Reading file: %s\n",  gcnoFileName);
 
     // Open the notes file.
     gcovFile = fopen( gcnoFileName, "r" );
