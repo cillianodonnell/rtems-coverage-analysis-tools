@@ -17,7 +17,7 @@ extern Target::TargetBase*          TargetInfo;
 extern const char*                  dynamicLibrary;
 extern const char*                  projectName;
 
-#define MAX_LINE_LENGTH             512
+#define MAX_LINE_LENGTH             2048
 extern char                         inputBuffer[MAX_LINE_LENGTH];
 extern char                         inputBuffer2[MAX_LINE_LENGTH];
 

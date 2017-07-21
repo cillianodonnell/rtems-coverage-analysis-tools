@@ -29,53 +29,20 @@
 #
 
 #
-# QEMU
+# All paths in defaults must be Unix format. Do not store any Windows format
+# paths in the defaults.
 #
-# Use a qemu command to run the executable in the qemu simulator.
+# Every entry must describe the type of checking a host must pass.
+#
+# Records:
+#  key: type, attribute, value
+#   type     : none, dir, exe, triplet
+#   attribute: none, required, optional
+#   value    : 'single line', '''multi line'''
 #
 
-%include %{_configdir}/base.cfg
-%include %{_configdir}/checks.cfg
-
 #
-# Console.
+# Global defaults
 #
-%define console_stdio
-%include %{_configdir}/console.cfg
-
-#
-# RTEMS version
-#
-%include %{_rtdir}/rtems/version.cfg
-
-#
-# Qemu common option patterns.
-#
-#%define qemu_opts_base   -no-reboot -monitor none -serial stdio -nographic
-#%define qemu_opts_base   -no-reboot -serial null -serial mon:stdio -nographic
-%define qemu_opts_base   -no-reboot -monitor null -serial stdio -nographic
-%define qemu_opts_no_net -net none
-#
-# Qemu executable
-#
-%define qemu_cmd  qemu-system-%{bsp_arch}
-%define qemu_opts %{bsp_opts}
-
-#
-# Coverage analysis
-#
-%define coverage_arg %{nil}
-%if %{defined _coverage}
-
- %if %{coverage_supported}
-   %define coverage_arg -exec-trace coverage/%{test_executable_name}.cov
- %else
-  %error "Coverage analysis unsupported for %{bsp}"
- %endif
-
-%endif
-
-#
-# Executable
-#
-%execute %{qemu_cmd} %{qemu_opts} -kernel %{test_executable} %{coverage_arg}
+[global]
+__covoar:			exe,	required, 'covoar'

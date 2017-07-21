@@ -29,53 +29,36 @@
 #
 
 #
-# QEMU
+# All paths in defaults must be Unix format. Do not store any Windows format
+# paths in the defaults.
 #
-# Use a qemu command to run the executable in the qemu simulator.
+# Every entry must describe the type of checking a host must pass.
+#
+# Records:
+#  key: type, attribute, value
+#   type     : none, dir, exe, triplet
+#   attribute: none, required, optional
+#   value    : 'single line', '''multi line'''
 #
 
-%include %{_configdir}/base.cfg
-%include %{_configdir}/checks.cfg
+#
+# The sparc/leon3 QEMU BSP
+#
 
-#
-# Console.
-#
-%define console_stdio
-%include %{_configdir}/console.cfg
+[global]
+bsp:                      none,    none,     'leon3'
+coverage_supported:	      none,	   none,	   '1'
 
-#
-# RTEMS version
-#
-%include %{_rtdir}/rtems/version.cfg
+[leon3]
+leon3:                    none,    none,     '%{_rtscripts}/qemu.cfg'
+leon3_arch:               none,    none,     'sparc'
+leon3_opts:               none,    none,     '-M leon3_generic -m 64M "--console=com1;boot;"'
 
-#
-# Qemu common option patterns.
-#
-#%define qemu_opts_base   -no-reboot -monitor none -serial stdio -nographic
-#%define qemu_opts_base   -no-reboot -serial null -serial mon:stdio -nographic
-%define qemu_opts_base   -no-reboot -monitor null -serial stdio -nographic
-%define qemu_opts_no_net -net none
-#
-# Qemu executable
-#
-%define qemu_cmd  qemu-system-%{bsp_arch}
-%define qemu_opts %{bsp_opts}
-
-#
-# Coverage analysis
-#
-%define coverage_arg %{nil}
-%if %{defined _coverage}
-
- %if %{coverage_supported}
-   %define coverage_arg -exec-trace coverage/%{test_executable_name}.cov
- %else
-  %error "Coverage analysis unsupported for %{bsp}"
- %endif
-
-%endif
-
-#
-# Executable
-#
-%execute %{qemu_cmd} %{qemu_opts} -kernel %{test_executable} %{coverage_arg}
+[coverage]
+format:		                none,    none,     'QEMU'
+target:		                none,    none,     'sparc-rtems4.12'
+explanations:	            none,    none,     '%{_rtscripts}/coverage/Explanations.txt'
+coverageExtension:	      none,    none,     'exe.cov'
+# gcnosFile:	              none,    none,     '%{_rtscripts}/coverage/rtems.gcnos'
+executableExtension:	    none,    none,     'exe'
+projectName:	            none,    none,     'RTEMS 4.12'
