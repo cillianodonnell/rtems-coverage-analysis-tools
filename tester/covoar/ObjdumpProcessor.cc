@@ -109,7 +109,7 @@ namespace Coverage {
 
         aCoverageMap->setIsStartOfInstruction( itr->address );
       }
-      
+
 
       // Create a unified coverage map for the symbol.
       SymbolsToAnalyze->createCoverageMap(
