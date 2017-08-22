@@ -43,12 +43,14 @@ from rtemstoolkit import log
 from rtemstoolkit import path
 from rtemstoolkit import stacktraces
 from rtemstoolkit import version
+from rtemstoolkit import check
 
 from . import bsps
 from . import config
 from . import console
 from . import options
 from . import report
+from . import coverage
 
 #
 # The following fragment is taken from https://bitbucket.org/gutworth/six
@@ -171,9 +173,10 @@ class test_run(object):
         if self.test:
             self.test.kill()
 
-def find_executables(paths, glob):
+def find_executables(paths, glob, path_to_builddir):
     executables = []
     for p in paths:
+        p = os.path.join(path_to_builddir, p)
         if path.isfile(p):
             executables += [p]
         elif path.isdir(p):
@@ -230,6 +233,18 @@ def killall(tests):
     for test in tests:
         test.kill()
 
+def prepare_coverage(opts, path_to_builddir):
+    opts.defaults.load('%%{_configdir}/coverage.mc')
+    if not check.check_exe('__covoar', opts.defaults['__covoar']):
+        raise error.general('Covoar not found!')
+    coverage_obj = coverage.coverage_run(opts.defaults, path_to_builddir)
+    return coverage_obj
+
+def coverage_run(opts, coverage, executables):
+    coverage.config_map = opts.defaults.macros['coverage']
+    coverage.executables = executables
+    coverage.run()
+
 def run(command_path = None):
     import sys
     tests = []
@@ -244,7 +259,9 @@ def run(command_path = None):
                     '--debug-trace': 'Debug trace based on specific flags',
                     '--filter':      'Glob that executables must match to run (default: ' +
                               default_exefilter + ')',
-                    '--stacktrace':  'Dump a stack trace on a user termination (^C)' }
+                    '--stacktrace':  'Dump a stack trace on a user termination (^C)',
+                    '--coverage':    'Perform coverage analysis of test exectuables.',
+                    '--rtems-builddir': 'The path to the build directory.'}
         opts = options.load(sys.argv,
                             optargs = optargs,
                             command_path = command_path)
@@ -288,6 +305,13 @@ def run(command_path = None):
         if not bsp_script:
             raise error.general('BSP script not found: %s' % (bsp))
         bsp_config = opts.defaults.expand(opts.defaults[bsp])
+        path_to_builddir = opts.find_arg('--rtems-builddir')
+        if not path_to_builddir:
+            raise error.general('Path to build directory not provided')
+        coverage_enabled = opts.find_arg('--coverage')
+        if coverage_enabled:
+            coverage = prepare_coverage(opts, path_to_builddir[1])
+            coverage.prepare_environment();
         report_mode = opts.find_arg('--report-mode')
         if report_mode:
             if report_mode[1] != 'failures' and \
@@ -297,7 +321,7 @@ def run(command_path = None):
             report_mode = report_mode[1]
         else:
             report_mode = 'failures'
-        executables = find_executables(opts.params(), exe_filter)
+        executables = find_executables(opts.params(), exe_filter, path_to_builddir[1])
         if len(executables) == 0:
             raise error.general('no executables supplied')
         start_time = datetime.datetime.now()
@@ -349,6 +373,8 @@ def run(command_path = None):
         end_time = datetime.datetime.now()
         log.notice('Average test time: %s' % (str((end_time - start_time) / total)))
         log.notice('Testing time     : %s' % (str(end_time - start_time)))
+        if coverage_enabled:
+            coverage_run(opts, coverage, executables)
     except error.general as gerr:
         print(gerr)
         sys.exit(1)
