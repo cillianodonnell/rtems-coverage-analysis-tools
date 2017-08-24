@@ -97,7 +97,7 @@ namespace Coverage {
 
     // Create a coverage map for the symbol.
     aCoverageMap = executableInfo->createCoverageMap(
-      symbolName, lowAddress, endAddress
+      executableInfo->getFileName().c_str(), symbolName, lowAddress, endAddress
     );
 
     if (aCoverageMap) {
@@ -112,7 +112,8 @@ namespace Coverage {
 
       // Create a unified coverage map for the symbol.
       SymbolsToAnalyze->createCoverageMap(
-        symbolName, endAddress - lowAddress + 1, executableInfo
+        executableInfo->getFileName().c_str(), symbolName,
+        endAddress - lowAddress + 1
       );
     }
   }

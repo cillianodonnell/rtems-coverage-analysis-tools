@@ -335,16 +335,14 @@ namespace Coverage {
 
 
   void DesiredSymbols::createCoverageMap(
+    const std::string& exefileName,
     const std::string& symbolName,
-    uint32_t           size,
-    ExecutableInfo* const theExecutable
+    uint32_t           size
   )
   {
     CoverageMapBase*      aCoverageMap;
     uint32_t              highAddress;
     symbolSet_t::iterator itr;
-
-    theExecutable->dumpExecutableInfo();
 
     // Ensure that the symbol is a desired symbol.
     itr = set.find( symbolName );
@@ -366,17 +364,19 @@ namespace Coverage {
       // ensure that the specified size matches the existing size.
       if (itr->second.stats.sizeInBytes != size) {
 
-        // Changed ERROR to INFO because size mismatch is not treated as error anymore.
-        // Set smallest size as size and continue.
-        // Update value for longer byte size.
+        // Changed ERROR to INFO because size mismatch is not treated as error anymore. 
+        // Set smallest size as size and continue. 
+        // Update value for longer byte size. 
         // 2015-07-22
         fprintf(
           stderr,
           "INFO: DesiredSymbols::createCoverageMap - Attempt to create "
-          "unified coverage maps for %s with different sizes (%d != %d)\n",
+          "unified coverage maps for %s with different sizes (%s/%d != %s/%d)\n",
 
           symbolName.c_str(),
+          exefileName.c_str(),
           itr->second.stats.sizeInBytes,
+          itr->second.sourceFile->getFileName().c_str(),
           size
        );
 
@@ -393,13 +393,14 @@ namespace Coverage {
 
       highAddress = size - 1;
 
-      aCoverageMap = new CoverageMap( 0, highAddress );
+      aCoverageMap = new CoverageMap( exefileName, 0, highAddress );
       if (!aCoverageMap) {
 
         fprintf(
           stderr,
           "ERROR: DesiredSymbols::createCoverageMap - Unable to allocate "
-          "coverage map for %s\n",
+          "coverage map for %s:%s\n",
+          exefileName.c_str(),
           symbolName.c_str()
         );
         exit( -1 );
