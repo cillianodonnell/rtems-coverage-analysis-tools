@@ -399,7 +399,7 @@ namespace Coverage {
         &offset, symbol, &terminator1
       );
 
-      // See if it is a jump table.
+      // Determine if a jump table has been added to the end of a symbol.
       found = sscanf(
         line.c_str(),
         "%x%c\t%*[^\t]%c%s %*x %*[^+]%s",
@@ -438,7 +438,9 @@ namespace Coverage {
           theInstructions.push_back( lineInfo );
         }
       }
-      // If it looks like a jump table, finalize the symbol.
+      // If the line is the start of a jump table, finalize the symbol and
+      // set the processSymbol variable to false so no more lines are processed
+      // until a new symbol is found.
       else if ( (found == 5) && (terminatorOne == ':') && (terminator2 == '\t')
                && (call.find( "call" ) != std::string::npos)
                && (jumpTableID.find( "+0x" ) != std::string::npos)
