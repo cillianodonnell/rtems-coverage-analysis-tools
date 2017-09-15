@@ -33,6 +33,8 @@
 
 #include "rld.h"
 #include "rld-process.h"
+#include "rld-symbols.h"
+#include "rld-files.h"
 
 namespace Symbols
 {
@@ -44,12 +46,14 @@ namespace Symbols
   {
   }
 
-  std::string SymbolSet::parseNmOutputLine (std::string line)
+  std::string SymbolSet::parseElfDataLine (std::string line)
   {
     std::string symbol = "";
-    if (line.find ("FUNC|") != std::string::npos)
+    int funcStartPos = 64;
+    if (line.find ("STT_FUNC") != std::string::npos)
     {
-      symbol = line.substr (0, line.find ('|'));
+      symbol = line.substr (funcStartPos);
+      symbol = symbol.substr (0, symbol.find (' '));
     }
     return symbol;
   }
@@ -71,12 +75,16 @@ namespace Symbols
     return base + "/" + libname;
   }
 
-  void SymbolSet::parseNmOutput (std::ifstream& nm_out, const std::string& lib)
+  void SymbolSet::parseElfData (rld::process::tempfile& elfData,
+                                const std::string& lib)
   {
     std::string line, symbol;
-    while (getline (nm_out, line))
+    elfData.open( true );
+    while ( true )
     {
-      symbol = parseNmOutputLine (line);
+      elfData.read_line (line);
+      if ( line.empty() ) break;
+      symbol = parseElfDataLine (line);
       if (symbol.length () > 0)
       {
         symbols.push_back (symbol + " " + getLibname (lib));
@@ -87,48 +95,55 @@ namespace Symbols
   void SymbolSet::generateSymbolFile (rld::process::tempfile& filePath,
                                       std::string target)
   {
-    std::string nm_output = "nm.out";
-    std::string nm_error = "nm.err";
-    std::string libFiles;
+    rld::files::cache   kernel;
+    rld::symbols::table symbolsTable;
 
     for (std::string lib : libraries)
     {
+      /*
+       * Load the symbols from the kernel.
+       */
       try
       {
-        auto status = rld::process::execute (target + "-nm",
-                std::vector<std::string> { target + "-nm", "--format=sysv",
-                        lib }, nm_output, nm_error);
-        if (status.type != rld::process::status::normal or status.code != 0)
-        {
-          std::cout << "ERROR: nm returned " << status.code << std::endl;
-          std::cout << "For details see " << nm_error
-                    << " file." << std::endl;
-          std::remove (nm_output.c_str ());
-          return;
-        }
+        /*
+         * Load the kernel ELF file symbol table.
+         */
+        kernel.open ();
+        kernel.add (lib);
+        kernel.load_symbols (symbolsTable, true);
+
+        /*
+         * Create a symbols file.
+         */
+        std::ofstream mout;
+        mout.open (filePath.name().c_str());
+        if (!mout.is_open ())
+          throw rld::error ("map file open failed", "map");
+        mout << "RTEMS Kernel Symbols Map" << std::endl
+             << " kernel: " << lib << std::endl
+             << std::endl;
+        rld::symbols::output (mout, symbolsTable);
+        mout.close ();
       }
-      catch (rld::error& err)
+      catch (...)
       {
-        std::cout << "Error while running nm for " + lib << std::endl;
-        std::cout << err.what << " in " << err.where << std::endl;
-        return;
+        kernel.close ();
+        throw;
       }
 
-      std::ifstream nm_out (nm_output);
+      kernel.close ();
+
       try
       {
-        parseNmOutput (nm_out, lib);
+        parseElfData (filePath, lib);
       }
       catch (std::exception& e)
       {
-        std::cout << "ERROR while parsing nm output: " << e.what ()
+        std::cout << "ERROR while parsing symbols output: " << e.what ()
                   << std::endl;
       }
-      nm_out.close ();
+      filePath.close ();
     }
-
-    std::remove (nm_output.c_str ());
-    std::remove (nm_error.c_str ());
 
     std::ofstream outputFile (filePath.name ());
     for (std::string symbol : symbols)

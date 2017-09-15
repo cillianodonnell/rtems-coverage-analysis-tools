@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include <list>
+#include <fstream>
 
 #include "app_common.h"
 #include "CoverageFactory.h"
@@ -23,6 +24,7 @@
 #include "TargetFactory.h"
 #include "GcovData.h"
 #include "SymbolSetReader.h"
+#include "SymbolSet.h"
 
 #include "rld-process.h"
 
@@ -136,6 +138,7 @@ int main(
     std::string                                    option;
     rld::process::tempfile                         objdumpFile( ".dmp" );
     rld::process::tempfile                         err( ".err" );
+    rld::process::tempfile                         syms( ".syms" );
     bool                                           debug = false;
 
    /*
@@ -143,7 +146,7 @@ int main(
     */
     progname = argv[0];
 
-    while ( (opt = getopt( argc, argv, "1:L:e:c:g:E:f:s:S:T:O:p:v:d" )) != -1 ) {
+    while ( (opt = getopt( argc, argv, "C:1:L:e:c:g:E:f:s:S:T:O:p:v:d" )) != -1 ) {
       switch( opt ) {
         case '1': singleExecutable      = optarg; break;
         case 'L': dynamicLibrary        = optarg; break;
@@ -375,16 +378,19 @@ int main(
     *Read symbol configuration file and load needed symbols
     */
     if ( symbolSetFile ) {
-        std::cout << "Reading configuration symbol set file: " << symbolSetFile
-                  << std::endl;
-        Symbols::SymbolSetReader ssr;
-        std::vector<Symbols::SymbolSet> symbolSets = ssr.readSetFile( symbolSetFile );
-        Symbols::SymbolSet& set = symbolSets[0];
-        std::cout << "Generating symbol file for " + set.getName() << std::endl;
+      std::cout << "Reading configuration symbol set file: " << symbolSetFile
+                << std::endl;
+      Symbols::SymbolSetReader ssr;
+      std::vector<Symbols::SymbolSet> symbolSets = ssr.readSetFile( symbolSetFile );
+      Symbols::SymbolSet& set = symbolSets[0];
+      std::cout << "Generating symbol file for " + set.getName() << std::endl;
+      set.generateSymbolFile( syms, target );
+      SymbolsToAnalyze->load( syms.name().c_str() );
     }
     if ( Verbose )
       std::cout << "Analyzing " + SymbolsToAnalyze->set.size()
                 << "symbols" << std::endl;
+
    /*
     * Create explanations.
     */
@@ -542,10 +548,13 @@ int main(
     * Leaves tempfiles around if debug flag (-d) is enabled.
     */
     if ( debug ) {
+      rld::process::set_keep_temporary_files();
       objdumpFile.override( "objdump_file" );
       objdumpFile.keep();
       err.override( "objdump_exec_log" );
       err.keep();
+      syms.override( "symbols_list" );
+      syms.keep();
     }
   }
   catch( rld::error re )

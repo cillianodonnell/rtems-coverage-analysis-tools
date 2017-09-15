@@ -69,9 +69,10 @@ namespace Symbols
     std::vector<std::string> libraries;
     std::vector<std::string> symbols;
 
-    std::string parseNmOutputLine (std::string line);
+    std::string parseElfDataLine (std::string line);
     std::string getLibname (std::string libPath);
-    void parseNmOutput (std::ifstream& nm_out, const std::string& lib);
+    void parseElfData (rld::process::tempfile& elfData,
+                       const std::string& lib);
   };
 }
 
